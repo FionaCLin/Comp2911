@@ -1,0 +1,31 @@
+Unloading 120 Sydney           # Unloading cost is 120 in Sydney
+Unloading 80 Dubbo             # Unloading cost is 80 in Dubbo
+Unloading 80 Grafton           # Unloading cost is 80 in Grafton
+Unloading 120 Wagga            # Unloading cost is 120 in Wagga
+Unloading 160 Bathurst         # Unloading cost is 160 in Bathurst
+Unloading 120 Melbourne           # Unloading cost is 120 in Melbourne
+Unloading 80 Penrith             # Unloading cost is 80 in Penrith
+Unloading 80 Granvile           # Unloading cost is 80 in Granvile
+Unloading 120 Gordon            # Unloading cost is 120 in Gordon
+Unloading 160 Darwin         # Unloading cost is 160 in Darwin
+Cost 360 Sydney Wagga          # Travel cost is 360 from Sydney to Wagga
+Cost 200 Sydney Bathurst       # Travel cost is 200 from Sydney to Bathurst
+Cost 200 Dubbo Grafton         # Travel cost is 200 from Dubbo to Grafton
+Cost 240 Dubbo Bathurst        # Travel cost is 240 from Dubbo to Bathurst
+Cost 480 Grafton Wagga         # Travel cost is 480 from Grafton to Wagga
+Cost 440 Grafton Bathurst      # Travel cost is 440 from Grafton to Bathurst
+Cost 400 Wagga Bathurst        # Travel cost is 400 from Wagga to Bathurst
+Cost 360 Melbourne Wagga          # Travel cost is 360 from Sydney to Wagga
+Cost 200 Melbourne Bathurst       # Travel cost is 200 from Sydney to Bathurst
+Cost 200 Dubbo Gordon         # Travel cost is 200 from Dubbo to Grafton
+Cost 240 Dubbo Penrith        # Travel cost is 240 from Dubbo to Bathurst
+Cost 480 Grafton Penrith         # Travel cost is 480 from Grafton to Wagga
+Cost 440 Grafton Darwin      # Travel cost is 440 from Grafton to Bathurst
+Cost 400 Gordon Bathurst        # Travel cost is 400 from Wagga to Bathurst
+
+Job Grafton Wagga              # Job is required from Grafton to Wagga
+Job Dubbo Grafton              # Job is required from Dubbo to Grafton
+Job Sydney Wagga               # Job is required from Sydney to Wagga
+Job Sydney Bathurst            # Job is required from Sydney to Bathurst
+Job Grafton Sydney              # Job is required from Grafton to Wagga
+Print
