@@ -1,36 +1,42 @@
 
-public class Job extends RoutePath {
+public class Job {
+	private Town src;
+	private Town dest;
+	private int totalCost;
 
 	/**
 	 * @param origin
 	 * @param destination
 	 */
-	public Job(Town origin, Town destination) {
-		super(new RoutePath(null, origin, 0), destination, destination.getUnloadCost());
+	public Job(Town src, Town dest) {
+		this.src = src;
+		this.dest = dest;
+		this.setTotal();
+	}
+
+	public void setTotal() {
+		this.totalCost = this.src.getCostToAdjacentTown(dest.getName()) + this.dest.getUnloadCost();
 	}
 
 	/**
 	 * @return the origin
 	 */
 	public Town getOrigin() {
-		return super.getFrom().getCurrent();
+		return this.src;
 	}
 
 	/**
 	 * @return the destination
 	 */
 	public Town getDestination() {
-		return super.getCurrent();
+		return this.dest;
 	}
 
 	/**
 	 * @return the unload
 	 */
-	public int getUnloadCost() {
-		return super.getCurrent().getUnloadCost();
+	public int getCost() {
+		return this.totalCost;
 	}
 
-	public void setOrigin(RoutePath from) {
-		super.setFrom(from);
-	}
 }

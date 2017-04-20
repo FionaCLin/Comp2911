@@ -122,24 +122,25 @@ public class GeoMap {
 	// return visit;
 	// }
 
-	private int heuristic(RoutePath journey, LinkedList<Job> jobs) {
+	private int heuristic(Node journey, LinkedList<Job> jobs) {
 		Iterator<Job> itr = jobs.iterator();
 		int remainJobTotalCost = 0;
 		while (itr.hasNext()) {
 			remainJobTotalCost += itr.next().getTotal();
 		}
-		return journey.getTotal() + remainJobTotalCost;
+//		return journey.getTotal() + remainJobTotalCost;
+		return 0;
 	}
 
 	// Uniform Cost Search (Dijistra Search)
-	public RoutePath UniformCostSearch(LinkedList<Job> jobs) {
+	public Node UniformCostSearch(LinkedList<Job> jobs) {
 
 		// It always start from Sydney; a frontier to explore
-		RoutePath init = new RoutePath(null, this.start, 0);
-
-		LinkedList<RoutePath> closeSet = new LinkedList<>();
-
-		PriorityQueue<RoutePath> openSet = new PriorityQueue<RoutePath>();
+		Node init = new Node(this.start,null,0);
+		init.setTodo(jobs);
+		//TODO: set the heuristic value
+	
+		PriorityQueue<Node> openSet = new PriorityQueue<Node>();
 		openSet.add(init);
 
 		HashMap<Town, Integer> gScore = new HashMap<Town, Integer>();
@@ -150,6 +151,8 @@ public class GeoMap {
 			if (t.equals(this.start)) {
 				gScore.put(this.start, 0);
 				// For the first node, that value is completely heuristic.
+				// the goal state from start would be the travel cost exactly same as the 
+				// the job required cost(The total cost)
 				fScore.put(this.start, heuristic(init, jobs));
 			} else {
 				gScore.put(t, Integer.MAX_VALUE);
@@ -158,15 +161,14 @@ public class GeoMap {
 		}
 
 		while (openSet.isEmpty()) {
-			RoutePath currentPath = openSet.poll();
+			Node currentPos = openSet.poll();
 			// define when we meet the goal state.
-			if (jobs.isEmpty()) {
-				return null;
+			if (currentPos.getTodo().isEmpty()) {
+				return currentPos;
 			}
 			Iterator<Job> search = jobs.iterator();
-			openSet.remove(currentPath);
-			closeSet.add(currentPath);
-			Town current = currentPath.getCurrent();
+			openSet.remove(currentPos);
+			Town current = currentPos.getCurrentLocation();
 			Set<Entry<Town, Integer>> neightbours = current.getAdjacentTowns().entrySet();
 			for (Entry<Town, Integer> neightbour : neightbours) {
 				// check if there is match job
@@ -193,9 +195,9 @@ public class GeoMap {
 		return res.getFirst();
 	}
 
-	private Journey reconstruct_path(HashMap<Town, Town> comeForm, Town cur) {
+	private Node reconstruct_path(HashMap<Town, Town> comeForm, Town cur) {
 		// TODO Auto-generated method stub
-		Journey j = new Journey();
+		Node j = new Node();
 		return null;
 	}
 
