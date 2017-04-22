@@ -53,36 +53,10 @@ public class FreightSystem {
 						}
 						//
 						// System.out.println(command);
-					} else if (command.startsWith("Print")) {
-						// System.out.println(command);
-//						Town origin = freightTranSys.getLocations().get(0);
-//						System.out.println("From => "+origin.getName());
-//						LinkedList<Town> travel = freightTranSys.getMapGraph().bfs(origin);
-//						travel.forEach(t -> System.out.println(t.getName()));
-//						int total = 0;
-//						Town origin1 = freightTranSys.getLocations().get(1);
-//						LinkedList<RoutePath> travel1 = freightTranSys.getMapGraph().findShortestPath(origin, origin1);
-//						int sum = travel1.stream().mapToInt(t -> t.getEnd().getUnloadCost()).sum();
-//						sum += travel1.stream().mapToInt(t -> t.getCost()).sum();
-//						System.out.println("Find shortest From => "+origin.getName() + " -> " + origin1.getName() + " total cost: $" + sum);
-//						travel1.forEach(t -> System.out.println(t.getStart().getName() + " " +
-//						t.getEnd().getName()	+ "\tunload:$"+ t.getEnd().getUnloadCost() + 
-//						" trip cost: $" + t.getCost()));
-					}
+					} 
 				}
-
+				freightTranSys.AStarSearch();
 				bR.close();
-//				freightTranSys.getLocations().forEach(l -> {
-//					System.out.println(l.getName() + " upload cost $" + l.getUploadCost());
-//					l.printAdjacencyList();
-//				});
-//				
-//				freightTranSys.getJobList().forEach(j -> {
-//					System.out.println("Job " + j.getOrigin().getName() +
-//							" --> " + j.getDestination().getName());
-//					
-//				});
-//				
 			} catch (Exception e) {
 				e.printStackTrace();
 

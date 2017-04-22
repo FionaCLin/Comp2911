@@ -1,5 +1,7 @@
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map.Entry;
 
@@ -36,7 +38,8 @@ public class Town {
 	 * @return the adjacentTowns
 	 */
 	public Integer getCostToAdjacentTown(String name) {
-		Town res = (Town) this.adjacentTowns.keySet().stream().filter(t -> t.getName().equals(name));
+//		Town res = (Town) this.adjacentTowns.keySet().stream().filter(t -> t.getName().equals(name));
+		Town res = this.fetchTownByName(this.adjacentTowns.keySet(), name);
 		return adjacentTowns.get(res);
 	}
 
@@ -79,24 +82,24 @@ public class Town {
 
 	// getEdgesFromVertex() – Returns a LinkedList object of edges that come out
 	// of this vertex. Changes made to the object returned does not affect the
-	// encapsulated adjacency list.
-	public LinkedList<RoutePath> getEdgesFromTown() {
-		LinkedList<RoutePath> res = new LinkedList<RoutePath>();
-		for (Entry<Town, Integer> entry : this.adjacentTowns.entrySet()) {
-			res.add(new RoutePath(this, entry.getKey(), entry.getValue()));
-		}
-		return res;
-	}
-
-	public RoutePath getEdgesFromTown(Town end) {
-
-		for (Entry<Town, Integer> entry : this.adjacentTowns.entrySet()) {
-			if (entry.getKey().equals(end)) {
-				return new RoutePath(this, entry.getKey(), entry.getValue());
-			}
-		}
-		return null;
-	}
+//	// encapsulated adjacency list.
+//	public LinkedList<RoutePath> getEdgesFromTown() {
+//		LinkedList<RoutePath> res = new LinkedList<RoutePath>();
+//		for (Entry<Town, Integer> entry : this.adjacentTowns.entrySet()) {
+//			res.add(new RoutePath(this, entry.getKey(), entry.getValue()));
+//		}
+//		return res;
+//	}
+//
+//	public RoutePath getEdgesFromTown(Town end) {
+//
+//		for (Entry<Town, Integer> entry : this.adjacentTowns.entrySet()) {
+//			if (entry.getKey().equals(end)) {
+//				return new RoutePath(this, entry.getKey(), entry.getValue());
+//			}
+//		}
+//		return null;
+//	}
 
 	// printAdjacencyList() – Prints the adjacency list top-to-down.
 	public void printAdjacencyList() {
@@ -109,5 +112,15 @@ public class Town {
 
 	public boolean hasEdge(Town t) {
 		return this.adjacentTowns.containsKey(t);
+	}
+	public static Town fetchTownByName(Collection<Town> locations, String name) {
+		Iterator<Town> itr = locations.iterator();
+		while (itr.hasNext()) {
+			Town temp = itr.next();
+			if (temp.getName().equals(name)) {
+				return temp;
+			}
+		}
+		return null;
 	}
 }

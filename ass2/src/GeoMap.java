@@ -1,15 +1,13 @@
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map.Entry;
-import java.util.Comparator;
 import java.util.PriorityQueue;
-import java.util.Queue;
 import java.util.Set;
 
 public class GeoMap {
 	private LinkedList<Town> locations;
 	private static Town start;
+	private int numOfExpored;
 
 	/**
 	 * @param locations
@@ -17,7 +15,14 @@ public class GeoMap {
 	public GeoMap(int uploadCost, String name) {
 		this.locations = new LinkedList<>();
 		this.locations.add(new Town(uploadCost, name));
-		this.start = (Town) this.locations.stream().filter(t -> t.getName().equals("Sydney"));
+		this.start = Town.fetchTownByName(this.locations, "Sydney");
+	}
+
+	/**
+	 * @return the numOfExpored
+	 */
+	public int getNumOfExpored() {
+		return numOfExpored;
 	}
 
 	/**
@@ -122,10 +127,11 @@ public class GeoMap {
 	// return visit;
 	// }
 
-	private int heuristic(Node journey, LinkedList<Job> jobs) {
-		
-		// return journey.getTotal() + remainJobTotalCost;
-		return 0;
+	private int heuristic(LinkedList<Job> jobs) {
+		int res = 0;
+		res += jobs.stream().mapToInt(j -> j.getCost()).sum();
+		return res;
+//		return 0;
 	}
 
 	// Uniform Cost Search (Dijistra Search)
@@ -134,85 +140,70 @@ public class GeoMap {
 		// It always start from Sydney; a frontier to explore
 		Node init = new Node(this.start, null, false);
 		init.setTodo(jobs);
+		init.setHeuristic(heuristic(jobs));
 		// TODO: set the heuristic value
-		LinkedList<Town> closedSet = new LinkedList<>();
+
 		PriorityQueue<Node> openSet = new PriorityQueue<Node>();
 		openSet.add(init);
 
-		HashMap<Town, Integer> gScore = new HashMap<Town, Integer>();
-		HashMap<Town, Integer> fScore = new HashMap<Town, Integer>();
-		Iterator<Town> itr = this.locations.iterator();
-		while (itr.hasNext()) {
-			Town t = itr.next();
-			if (t.equals(this.start)) {
-				gScore.put(this.start, 0);
-				// For the first node, that value is completely heuristic.
-				// the goal state from start would be the travel cost exactly
-				// same as the
-				// the job required cost(The total cost)
-				fScore.put(this.start, heuristic(init, jobs));
-			} else {
-				gScore.put(t, Integer.MAX_VALUE);
-				fScore.put(t, Integer.MAX_VALUE);
-			}
-		}
-
-		while (openSet.isEmpty()) {
+		while (!openSet.isEmpty()) {
 			Node currentPos = openSet.poll();
+			this.numOfExpored++;
 			// define when we meet the goal state.
 			if (currentPos.getTodo().isEmpty()) {
 				return currentPos;
 			}
-			Iterator<Job> search = jobs.iterator();
-			openSet.remove(currentPos);
+
 			Town current = currentPos.getCurrentLocation();
-			boolean isRelatedToJob = jobs.stream()
-					.anyMatch(j -> j.getOrigin().equals(current) || j.getDestination().equals(current));
-			if (!isRelatedToJob) {
-				closedSet.add(current);
-			}
+
 			Set<Entry<Town, Integer>> neightbours = current.getAdjacentTowns().entrySet();
 			for (Entry<Town, Integer> neightbour : neightbours) {
+				if (currentPos.isInfinitLoop(neightbour.getKey()))
+					continue;
 				// check if there is match job
 				Job todo = null;
+				Iterator<Job> search = jobs.iterator();
 				while (search.hasNext()) {
 					Job searchToDo = search.next();
-					if (searchToDo.getOrigin().equals(current) && searchToDo.getDestination().equals(neightbour))
+					if (searchToDo.getOrigin().equals(current)
+							&& searchToDo.getDestination().equals(neightbour.getKey())) {
 						todo = searchToDo;
+						break;
+					}
 				}
 				boolean isJob = (todo != null);
 				Node nextMove = null;
 				if (isJob) {
 					// there is a job to do, make a new node and build the path
 					nextMove = new Node(todo.getDestination(), currentPos, isJob);
-					nextMove.setTodo(currentPos.getTodo());
 					nextMove.getTodo().remove(todo);
 				} else {
-					if (!(closedSet.contains(neightbour) && currentPos.getTodo().size() == jobs.size())) {
-						nextMove = new Node(neightbour.getKey(), currentPos, isJob);
-						nextMove.setTodo(currentPos.getTodo());
-
-					}
+					nextMove = new Node(neightbour.getKey(), currentPos, isJob);
+					nextMove.setTodo(currentPos.getTodo());
 				}
 				// TODO: calculate the heuristic
+				nextMove.setHeuristic(heuristic(nextMove.getTodo()));
 				openSet.add(nextMove);
 			}
 		}
 		return null;
 	}
 
-	private void reconstruct_path(Node journey) {
+	public void reconstruct_path(Node journey) {
 		// TODO Auto-generated method stub
-		if (journey == null) return ;
-		reconstruct_path(journey.getVisited());
-		if(journey.isJob()){
-			System.out.print("Job ");
-		} else {
-			System.out.print("Empty ");
+		if (journey == null)
+			return;
+		else if (journey.getVisited() != null) {
+			reconstruct_path(journey.getVisited());
+			if (journey.isJob()) {
+				System.out.print("Job ");
+			} else {
+				System.out.print("Empty ");
+			}
+			String printRes = journey.getVisited().getCurrentLocation().getName() + " to ";
+			printRes += journey.getCurrentLocation().getName();
+			System.out.println(printRes);
 		}
-		String printRes = journey.getVisited().getCurrentLocation()+ " to ";
-		printRes += journey.getCurrentLocation();
-		System.out.println(printRes);
 	}
 
 }

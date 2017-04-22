@@ -78,4 +78,15 @@ public class FreightTransportSystem {
 		return mapGraph;
 	}
 
+	public void AStarSearch() {
+		Node routes = this.mapGraph.UniformCostSearch(this.jobList);
+		
+		System.out.println(this.mapGraph.getNumOfExpored() +" nodes expand");	
+		
+		System.out.println("Cost = "+ routes.getCost());		
+		this.mapGraph.reconstruct_path(routes);
+		
+		
+	}
+
 }

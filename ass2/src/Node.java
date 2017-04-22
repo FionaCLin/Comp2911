@@ -3,24 +3,36 @@ import java.util.LinkedList;
 
 public class Node implements Comparable<Node> {
 	private LinkedList<Job> todo;
+
 	private Node visited;
 	private Town currentLocation;
-	// path cost and unload cost;
-	private int cost;
-	private int heuristic;
 	private boolean isJob;
+	// this path cost and unload cost;
+	// g(n)
+	private int cost;
+	// h(n)
+	private int heuristic;
+	
 
 	public Node(Town currentLocation, Node visited, boolean isJob) {
 		this.currentLocation = currentLocation;
 		this.visited = visited;
 		this.isJob = isJob;
 		this.setCost();
-		this.todo = new LinkedList<>();
+		if (visited != null) {
+			this.setTodo(visited.getTodo());
+		}
 	}
+
+	/**
+	 * @param cost
+	 *            the cost to set
+	 */
 
 	public void setCost() {
 		if (this.visited != null) {
 			this.cost = this.visited.getCurrentLocation().getCostToAdjacentTown(currentLocation.getName());
+			this.cost += this.visited.getCost();
 			if (isJob) {
 				this.cost += this.currentLocation.getUnloadCost();
 			}
@@ -28,6 +40,13 @@ public class Node implements Comparable<Node> {
 			this.cost = 0;
 			this.isJob = false;
 		}
+	}
+
+	/**
+	 * @return the totalCost
+	 */
+	public int getTotalCost() {
+		return this.cost + this.heuristic;
 	}
 
 	/**
@@ -49,6 +68,7 @@ public class Node implements Comparable<Node> {
 	 *            the todo to set
 	 */
 	public void setTodo(LinkedList<Job> todo) {
+		this.todo = new LinkedList<>();
 		for (Job j : todo) {
 			this.todo.add(j);
 		}
@@ -69,24 +89,12 @@ public class Node implements Comparable<Node> {
 	}
 
 	/**
-	 * @param visited
-	 *            the visited to set
-	 */
-	public void setVisited(Node visited) {
-		this.visited = visited;
-	}
-
-	/**
 	 * @return the cost
 	 */
 	public int getCost() {
 		return cost;
 	}
 
-	/**
-	 * @param cost
-	 *            the cost to set
-	 */
 	/**
 	 * @return the heuristic
 	 */
@@ -104,7 +112,21 @@ public class Node implements Comparable<Node> {
 
 	@Override
 	public int compareTo(Node o) {
-		return this.todo.size() - o.todo.size();
+		// int compare = o.todo.size()-this.todo.size();
+		// if (compare == 0) {
+		return this.getTotalCost() - o.getTotalCost();
+		// }
+		// return compare;
 	}
 
+	public boolean isInfinitLoop(Town nextTown) {
+		if (this.visited == null || this.visited.visited ==null) return false;
+		Town lastTown = this.visited.currentLocation;
+		Town lastLastTown = this.visited.visited.currentLocation;
+		if (lastTown.equals(nextTown) && this.currentLocation.equals(lastLastTown)) {
+			return true;
+		}
+		return false;
+
+	}
 }
