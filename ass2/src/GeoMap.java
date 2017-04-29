@@ -1,3 +1,5 @@
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map.Entry;
@@ -6,7 +8,7 @@ import java.util.Set;
 
 public class GeoMap {
 	private LinkedList<Town> locations;
-	private static Town start;
+	private Town start;
 	private int numOfExpored;
 
 	/**
@@ -15,6 +17,7 @@ public class GeoMap {
 	public GeoMap(int uploadCost, String name) {
 		this.locations = new LinkedList<>();
 		this.locations.add(new Town(uploadCost, name));
+		// change to be more dynamic
 		this.start = Town.fetchTownByName(this.locations, "Sydney");
 	}
 
@@ -61,94 +64,47 @@ public class GeoMap {
 		return t.getAdjacentTowns().keySet();
 	}
 
-	// getNumberOfVertices() – Returns the number of vertices in the graph. This
-	// value does not change once the graph is created.
-	public int getNumberOfTowns() {
-		return this.locations.size();
-	}
-
 	public int indexOf(Town origin) {
 		return this.locations.indexOf(origin);
 	}
-	//
-	// // BFS
-	// public LinkedList<Town> bfs(Town origin) {
-	// LinkedList<Town> visit = new LinkedList<Town>();
-	// boolean[] seen = new boolean[this.getNumberOfTowns()];
-	// Queue<RoutePath> q = new LinkedList<RoutePath>();
-	// q.add(new RoutePath(origin, origin, 0));
-	// while (!q.isEmpty()) {
-	// RoutePath e = q.poll();
-	// for (RoutePath p : e.getEnd().getEdgesFromTown()) {
-	// if (!seen[indexOf(p.getEnd())]) {
-	// q.add(p);
-	// seen[indexOf(p.getEnd())] = true;
-	// visit.addLast(p.getEnd());
-	// }
-	// }
-	// }
-	// return visit;
-	// }
-	//
-	// // find Path from src to dest
-	// public LinkedList<RoutePath> findShortestPath(Town src, Town dest) {
-	// boolean isFound = false;
-	// LinkedList<RoutePath> visit = new LinkedList<RoutePath>();
-	// boolean[] seen = new boolean[this.getNumberOfTowns()];
-	// int[] st = new int[this.getNumberOfTowns()];
-	// Queue<RoutePath> q = new LinkedList<RoutePath>();
-	// q.add(new RoutePath(src, src, 0));
-	// while (!q.isEmpty() && !isFound) {
-	// RoutePath e = q.poll();
-	// for (RoutePath p : e.getEnd().getEdgesFromTown()) {
-	// if (!seen[indexOf(p.getEnd())]) {
-	// q.add(p);
-	// seen[indexOf(p.getEnd())] = true;
-	// st[indexOf(p.getEnd())] = indexOf(p.getStart());
-	// }
-	// if (p.getEnd().equals(dest)) {
-	// isFound = true;
-	// break;
-	// }
-	// }
-	//
-	// }
-	// if (isFound) {
-	// int i = indexOf(dest);
-	// for (; i > indexOf(src);) {
-	// Town start = this.getLocations().get(i);
-	// i = st[i];
-	// Town end = this.getLocations().get(i);
-	// RoutePath p = start.getEdgesFromTown(end);
-	// visit.add(p);
-	// }
-	//
-	// }
-	// return visit;
-	// }
 
 	private int heuristic(LinkedList<Job> jobs) {
 		int res = 0;
 		res += jobs.stream().mapToInt(j -> j.getCost()).sum();
 		return res;
-//		return 0;
+		// return 0;
 	}
 
 	// Uniform Cost Search (Dijistra Search)
 	public Node UniformCostSearch(LinkedList<Job> jobs) {
-
 		// It always start from Sydney; a frontier to explore
 		Node init = new Node(this.start, null, false);
 		init.setTodo(jobs);
 		init.setHeuristic(heuristic(jobs));
-		// TODO: set the heuristic value
-
 		PriorityQueue<Node> openSet = new PriorityQueue<Node>();
 		openSet.add(init);
-
+		int k = 1;
 		while (!openSet.isEmpty()) {
+
 			Node currentPos = openSet.poll();
+
 			this.numOfExpored++;
+//			int minJobSize = jobs.size();
+//			if (openSet.size() > 100000) {
+//				System.out.println(" Trim " + k++ + "current #Jobs" + currentPos.getTodo().size());
+//				PriorityQueue<Node> temp = new PriorityQueue<Node>();
+//				for (int i = 0; i < 99999; i++) {
+//					if (minJobSize > currentPos.getTodo().size()) {
+//						minJobSize = currentPos.getTodo().size();
+//					}
+//					Node tempNode = openSet.poll();
+//					if (tempNode.getTodo().size() == minJobSize) {
+//						temp.add(tempNode);
+//					}
+//
+//				}
+//				openSet = temp;
+//			}
 			// define when we meet the goal state.
 			if (currentPos.getTodo().isEmpty()) {
 				return currentPos;
@@ -156,32 +112,52 @@ public class GeoMap {
 
 			Town current = currentPos.getCurrentLocation();
 
-			Set<Entry<Town, Integer>> neightbours = current.getAdjacentTowns().entrySet();
-			for (Entry<Town, Integer> neightbour : neightbours) {
-				if (currentPos.isInfinitLoop(neightbour.getKey()))
-					continue;
-				// check if there is match job
+			Set<Town> neightbours = current.getAdjacentTowns().keySet();
+			for (Town neightbour : neightbours) {
+				// System.out.println(
+				// "##" + current.getName() + "=>" + neightbour.getName() + " "
+				// + currentPos.getTotalCost());
+			
+//				boolean isReturnedJob = false;
+				// Instant s = Instant.now();
 				Job todo = null;
 				Iterator<Job> search = jobs.iterator();
 				while (search.hasNext()) {
 					Job searchToDo = search.next();
-					if (searchToDo.getOrigin().equals(current)
-							&& searchToDo.getDestination().equals(neightbour.getKey())) {
+					if (searchToDo.getOrigin().equals(current) && searchToDo.getDestination().equals(neightbour)) {
 						todo = searchToDo;
 						break;
 					}
 				}
+				Job rTodo = null;
+				if (todo != null) {
+					search = jobs.iterator();
+					while (search.hasNext()) {
+						Job searchToDo = search.next();
+						if (searchToDo.getOrigin().equals(neightbour) && searchToDo.getDestination().equals(current)) {
+							rTodo = searchToDo;
+							break;
+						}
+					}
+				}
+				if (currentPos.isInfinitLoop(neightbour) && (todo == null || rTodo == null))
+					continue;
 				boolean isJob = (todo != null);
+				boolean isReturnedJob = (rTodo != null);
 				Node nextMove = null;
 				if (isJob) {
-					// there is a job to do, make a new node and build the path
-					nextMove = new Node(todo.getDestination(), currentPos, isJob);
-					nextMove.getTodo().remove(todo);
+//					if (!isReturnedJob) {
+						// there is a job to do, make a new node and build the
+						// path
+						nextMove = new Node(todo.getDestination(), currentPos, isJob);
+						nextMove.getTodo().remove(todo);
+				} else if (isReturnedJob) {
+						nextMove = new Node(neightbour, currentPos, isJob);
+						nextMove = new Node(rTodo.getDestination(), nextMove, isReturnedJob);
+						nextMove.getTodo().remove(rTodo);	
 				} else {
-					nextMove = new Node(neightbour.getKey(), currentPos, isJob);
-					nextMove.setTodo(currentPos.getTodo());
+					nextMove = new Node(neightbour, currentPos, isJob);
 				}
-				// TODO: calculate the heuristic
 				nextMove.setHeuristic(heuristic(nextMove.getTodo()));
 				openSet.add(nextMove);
 			}
@@ -201,7 +177,8 @@ public class GeoMap {
 				System.out.print("Empty ");
 			}
 			String printRes = journey.getVisited().getCurrentLocation().getName() + " to ";
-			printRes += journey.getCurrentLocation().getName();
+			printRes += journey.getCurrentLocation().getName() + "\t";
+
 			System.out.println(printRes);
 		}
 	}
