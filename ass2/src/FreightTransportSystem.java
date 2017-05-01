@@ -4,22 +4,21 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
 
 public class FreightTransportSystem {
 	private GeoMap mapGraph;
-	private LinkedList<Job> jobList;
+	private HashSet<Job> jobList;
+
 	/**
 	 * @param locations
 	 */
 	public FreightTransportSystem(int uploadCost, String name) {
-		this.mapGraph = new GeoMap(uploadCost, name);
-		this.jobList = new LinkedList<>();
+		this.mapGraph = new GeoMap(uploadCost, name, new TotalCostHeuristic());
+		this.jobList = new HashSet<Job>();
 
 	}
 
-	/**
-	 * @return the locations
-	 */
 	public LinkedList<Town> getLocations() {
 		return this.mapGraph.getLocations();
 	}
@@ -29,7 +28,6 @@ public class FreightTransportSystem {
 	}
 
 	public void addAdjTownCost(String origin, String destination, int cost) {
-		// TODO Auto-generated method stub
 		Town start = null;
 		Town end = null;
 		for (Town t : this.mapGraph.getLocations()) {
@@ -60,6 +58,7 @@ public class FreightTransportSystem {
 			}
 		}
 		if (start != null && end != null && start.getAdjacentTowns().containsKey(end)) {
+
 			this.jobList.add(new Job(start, end));
 			return true;
 		} else {
@@ -68,31 +67,19 @@ public class FreightTransportSystem {
 		}
 	}
 
-	/**
-	 * @return the jobList
-	 */
-	public LinkedList<Job> getJobList() {
-		return jobList;
-	}
-
-	public GeoMap getMapGraph() {
-		return mapGraph;
-	}
 
 	public void AStarSearch() {
-		Instant s = Instant.now();
-		
-		Node routes = this.mapGraph.aStarSearch(new HashSet<Job>(this.jobList));
-		Instant e = Instant.now();
-		Duration d = Duration.between(s, e);
-		System.out.println("Job finding time: " + d.getSeconds());
-		
-		System.out.println(this.mapGraph.getNumOfExpored() +" nodes expand");	
-		
-		System.out.println("cost = "+ routes.getCost());		
-		this.mapGraph.reconstruct_path(routes);
-		
-		
+
+		Node routes = this.mapGraph.aStarSearch(this.jobList);
+
+		System.out.println(this.mapGraph.getNumOfExpored() + " nodes expand");
+		if (routes != null) {
+			System.out.println("cost = " + routes.getCost());
+			this.mapGraph.reconstruct_path(routes);
+		} else {
+			System.out.println("No Solution");
+		}
+
 	}
 
 }

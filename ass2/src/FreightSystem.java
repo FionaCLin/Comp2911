@@ -29,14 +29,12 @@ public class FreightSystem {
 							freightTranSys.addLocations(cost, name);
 						}
 					} else if (command.startsWith("Cost")) {
-						// Cost 240 Dubbo Bathurst # Travel cost is 240 from Dubbo to Bathurst
 						int cost = Integer.parseInt(command.split(" ")[1]);
 						String origin = command.split(" ")[2];
 						String destination = command.split(" ")[3];
 						freightTranSys.addAdjTownCost(origin, destination, cost);
 
 					} else if (command.startsWith("Job")) {
-						// Job Grafton Wagga
 						String origin = command.split(" ")[1];
 						String destination = command.split(" ")[2];
 						if (!freightTranSys.addJobList(origin, destination)){
@@ -44,12 +42,7 @@ public class FreightSystem {
 						}
 					} 
 				}
-//				freightTranSys.getJobList().forEach(j -> System.out.println(j.getOrigin().getName()+"=>"+j.getDestination().getName()));
-				Instant s = Instant.now();
 				freightTranSys.AStarSearch();
-				Instant e = Instant.now();
-				Duration d = Duration.between(s,e);
-				System.out.println("Running time: "+d.getSeconds());
 				bR.close();
 			} catch (Exception e) {
 				e.printStackTrace();

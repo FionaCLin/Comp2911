@@ -14,8 +14,8 @@ import java.util.Map.Entry;
  */
 public class Town {
 	//immutable
-	private int uploadCost;
-	private String name;
+	private final int uploadCost;
+	private final String name;
 	private HashMap<Town, Integer> adjacentTowns;
 
 	/**
@@ -50,15 +50,6 @@ public class Town {
 	public int getUnloadCost() {
 		return uploadCost;
 	}
-
-	/**
-	 * @param uploadCost
-	 *            the uploadCost to set
-	 */
-	public void setUploadCost(int uploadCost) {
-		this.uploadCost = uploadCost;
-	}
-
 	/**
 	 * @return the name
 	 */
@@ -66,20 +57,6 @@ public class Town {
 		return name;
 	}
 
-	/**
-	 * @param name
-	 *            the name to set
-	 */
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	// getNumberOfEdgesFromVertex() – Returns the number of edges coming out
-	// from a vertex. Basically, it returns the length of the linked list
-	// associated with the vertex.
-	public int getNumberOfEdgesFromTown() {
-		return this.getAdjacentTowns().size();
-	}
 	public static Town fetchTownByName(Collection<Town> locations, String name) {
 		Iterator<Town> itr = locations.iterator();
 		while (itr.hasNext()) {

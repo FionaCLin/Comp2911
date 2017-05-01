@@ -1,7 +1,5 @@
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
 
 public class Node {
 	private State state;
@@ -98,9 +96,8 @@ public class Node {
 		
 		// is that a job
 		Job job = null;
-		Iterator<Job> itr = this.state.getJobs().iterator();
-		while(itr.hasNext()){
-			Job temp = itr.next();
+				
+		for (Job temp: this.state.getJobs()){
 			if (temp.getOrigin().equals(this.state.getTown()) && temp.getDestination().equals(neightbour)) {
 				job = temp;
 				break;

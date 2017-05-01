@@ -1,3 +1,5 @@
+import java.util.HashSet;
+
 /**
  * 
  */
@@ -7,5 +9,5 @@
  *
  */
 public interface IHeuristicStrategy {
-	public int HeuristicFunc(Town current, Town goal);
+	public int calcHeuristic(HashSet<Job> jobs);
 }

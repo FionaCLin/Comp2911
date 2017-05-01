@@ -1,31 +1,23 @@
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Map.Entry;
 import java.util.PriorityQueue;
 import java.util.Set;
-import java.util.stream.Stream;
 
 public class GeoMap {
 	private LinkedList<Town> locations;
 	private Town start;
-	private int jobSize;
 	private int numOfExplored;
+	private IHeuristicStrategy heuristic;
 
 	/**
 	 * @param locations
 	 */
-	public GeoMap(int uploadCost, String name) {
+	public GeoMap(int uploadCost, String name, IHeuristicStrategy heuristic) {
 		this.locations = new LinkedList<>();
 		this.locations.add(new Town(uploadCost, name));
 		// change to be more dynamic
 		this.start = Town.fetchTownByName(this.locations, "Sydney");
+		this.heuristic = heuristic;
 	}
 
 	/**
@@ -75,30 +67,16 @@ public class GeoMap {
 		return this.locations.indexOf(origin);
 	}
 
-	private int heuristic(HashSet<Job> jobs) {
-		int res = 0;
-		res += jobs.stream().mapToInt(j -> j.getCost()).sum();
-		// if (this.jobSize > 10) {
-		// if (jobs.size() >= (this.jobSize / 2)) {
-		// res += jobs.size() * 100;
-		// } else {
-		// res += jobs.size() * 3;
-		// }
-		// }
-		// return res;
-		return 0;
-	}
-
 	// Uniform Cost Search (Dijistra Search)
 	public Node aStarSearch(HashSet<Job> jobs) {
 
 		State first_state = new State(this.start, jobs);
-		// It always start from Sydney; a frontier to explore
 		Node first = new Node(first_state, null, false);
 
-		first.setHeuristic(heuristic(jobs));
+		first.setHeuristic(heuristic.calcHeuristic(jobs));
 
 		PriorityQueue<Node> openSet = new PriorityQueue<Node>(new TotalCostComparator());
+
 		HashSet<State> seen = new HashSet<State>();
 		openSet.add(first);
 		seen.add(first_state);
@@ -106,8 +84,6 @@ public class GeoMap {
 
 			Node currentPos = openSet.poll();
 			this.numOfExplored++;
-//			System.out.println(this.numOfExplored + " queue " + openSet.size() + " todo Size "
-//					+ currentPos.getTodo().size() + " " + currentPos.getTotalCost());
 			Town current = currentPos.getCurrentLocation();
 
 			if (currentPos.getTodo().isEmpty()) {
@@ -120,11 +96,10 @@ public class GeoMap {
 			for (Town neightbour : current.getAdjacentTowns().keySet()) {
 				Node nextMove = currentPos.makeMove(neightbour);
 				if (seen.contains(nextMove.getState())) {
-//					System.out.println("Seen");
 					continue;
 				}
 				
-				nextMove.setHeuristic(heuristic(nextMove.getTodo()));
+				nextMove.setHeuristic(heuristic.calcHeuristic(nextMove.getTodo()));
 				openSet.add(nextMove);
 				seen.add(nextMove.getState());
 			}
@@ -134,7 +109,6 @@ public class GeoMap {
 	}
 
 	public void reconstruct_path(Node journey) {
-		// TODO Auto-generated method stub
 		if (journey == null)
 			return;
 		else if (journey.getVisited() != null) {
