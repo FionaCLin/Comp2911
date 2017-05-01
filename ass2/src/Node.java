@@ -1,7 +1,7 @@
 import java.util.HashMap;
 import java.util.LinkedList;
 
-public class Node implements Comparable<Node> {
+public class Node {
 	private LinkedList<Job> todo;
 
 	private Node visited;
@@ -12,7 +12,6 @@ public class Node implements Comparable<Node> {
 	private int cost;
 	// h(n)
 	private int heuristic;
-	
 
 	public Node(Town currentLocation, Node visited, boolean isJob) {
 		this.currentLocation = currentLocation;
@@ -110,21 +109,16 @@ public class Node implements Comparable<Node> {
 		this.heuristic = heuristic;
 	}
 
-	@Override
-	public int compareTo(Node o) {
-		// int compare = o.todo.size()-this.todo.size();
-		// if (compare == 0) {
-		return this.getTotalCost() - o.getTotalCost();
-		// }
-		// return compare;
-	}
-
 	public boolean isInfinitLoop(Town nextTown) {
-		if (this.visited == null || this.visited.visited ==null) return false;
-		Town lastTown = this.visited.currentLocation;
-		Town lastLastTown = this.visited.visited.currentLocation;
-		if (lastTown.equals(nextTown) && this.currentLocation.equals(lastLastTown)) {
-			return true;
+		if (this.visited == null || this.visited.visited == null)
+			return false;
+		Node lastTown = this.visited;
+		Node last2rdTown = lastTown.visited;
+		if (lastTown.getCurrentLocation().equals(nextTown)
+				&& this.currentLocation.equals(last2rdTown.currentLocation)) {
+			if (!lastTown.isJob && !last2rdTown.isJob) {
+				return true;
+			}
 		}
 		return false;
 

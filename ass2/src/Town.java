@@ -79,40 +79,6 @@ public class Town {
 	public int getNumberOfEdgesFromTown() {
 		return this.getAdjacentTowns().size();
 	}
-
-	// getEdgesFromVertex() – Returns a LinkedList object of edges that come out
-	// of this vertex. Changes made to the object returned does not affect the
-//	// encapsulated adjacency list.
-//	public LinkedList<RoutePath> getEdgesFromTown() {
-//		LinkedList<RoutePath> res = new LinkedList<RoutePath>();
-//		for (Entry<Town, Integer> entry : this.adjacentTowns.entrySet()) {
-//			res.add(new RoutePath(this, entry.getKey(), entry.getValue()));
-//		}
-//		return res;
-//	}
-//
-//	public RoutePath getEdgesFromTown(Town end) {
-//
-//		for (Entry<Town, Integer> entry : this.adjacentTowns.entrySet()) {
-//			if (entry.getKey().equals(end)) {
-//				return new RoutePath(this, entry.getKey(), entry.getValue());
-//			}
-//		}
-//		return null;
-//	}
-
-	// printAdjacencyList() – Prints the adjacency list top-to-down.
-	public void printAdjacencyList() {
-		this.adjacentTowns.entrySet().forEach(t -> {
-			System.out.println("\t" + t.getKey().getName() + " $" + t.getValue());
-		});
-	}
-	// removeEdge() – Removes an edge coming out of startVertex. It expects an
-	// object of Pair<Integer, Integer>
-
-	public boolean hasEdge(Town t) {
-		return this.adjacentTowns.containsKey(t);
-	}
 	public static Town fetchTownByName(Collection<Town> locations, String name) {
 		Iterator<Town> itr = locations.iterator();
 		while (itr.hasNext()) {

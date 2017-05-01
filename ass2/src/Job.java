@@ -39,4 +39,6 @@ public class Job {
 		return this.totalCost;
 	}
 
+	
+
 }

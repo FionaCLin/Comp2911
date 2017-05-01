@@ -1,3 +1,6 @@
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -71,19 +74,21 @@ public class FreightTransportSystem {
 		return jobList;
 	}
 
-	/**
-	 * @return the mapGraph
-	 */
 	public GeoMap getMapGraph() {
 		return mapGraph;
 	}
 
 	public void AStarSearch() {
+		Instant s = Instant.now();
+		
 		Node routes = this.mapGraph.UniformCostSearch(this.jobList);
+		Instant e = Instant.now();
+		Duration d = Duration.between(s, e);
+		System.out.println("Job finding time: " + d.getSeconds());
 		
 		System.out.println(this.mapGraph.getNumOfExpored() +" nodes expand");	
 		
-		System.out.println("Cost = "+ routes.getCost());		
+		System.out.println("cost = "+ routes.getCost());		
 		this.mapGraph.reconstruct_path(routes);
 		
 		

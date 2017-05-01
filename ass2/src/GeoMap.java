@@ -1,14 +1,20 @@
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map.Entry;
 import java.util.PriorityQueue;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public class GeoMap {
 	private LinkedList<Town> locations;
 	private Town start;
+	private int jobSize;
 	private int numOfExpored;
 
 	/**
@@ -71,98 +77,141 @@ public class GeoMap {
 	private int heuristic(LinkedList<Job> jobs) {
 		int res = 0;
 		res += jobs.stream().mapToInt(j -> j.getCost()).sum();
+//		if (this.jobSize > 10) {
+//			if (jobs.size() >= (this.jobSize / 2)) {
+//				res += jobs.size() * 100;
+//			} else {
+//				res += jobs.size() * 3;
+//			}
+//		}
 		return res;
-		// return 0;
+//		 return 0;
 	}
 
 	// Uniform Cost Search (Dijistra Search)
 	public Node UniformCostSearch(LinkedList<Job> jobs) {
+		this.jobSize = jobs.size();
+		
 		// It always start from Sydney; a frontier to explore
 		Node init = new Node(this.start, null, false);
 		init.setTodo(jobs);
 		init.setHeuristic(heuristic(jobs));
-		PriorityQueue<Node> openSet = new PriorityQueue<Node>();
+		// TODO: set the heuristic value
+
+		PriorityQueue<Node> openSet = new PriorityQueue<Node>(new TotalCostComparator());
+
+		HashMap<Town, HashMap<Integer, LinkedList<Node>>> closeSet = new HashMap<Town, HashMap<Integer, LinkedList<Node>>>();
 		openSet.add(init);
-		int k = 1;
+
 		while (!openSet.isEmpty()) {
 
 			Node currentPos = openSet.poll();
-
 			this.numOfExpored++;
-//			int minJobSize = jobs.size();
-//			if (openSet.size() > 100000) {
-//				System.out.println(" Trim " + k++ + "current #Jobs" + currentPos.getTodo().size());
-//				PriorityQueue<Node> temp = new PriorityQueue<Node>();
-//				for (int i = 0; i < 99999; i++) {
-//					if (minJobSize > currentPos.getTodo().size()) {
-//						minJobSize = currentPos.getTodo().size();
-//					}
-//					Node tempNode = openSet.poll();
-//					if (tempNode.getTodo().size() == minJobSize) {
-//						temp.add(tempNode);
-//					}
-//
-//				}
-//				openSet = temp;
-//			}
-			// define when we meet the goal state.
-			if (currentPos.getTodo().isEmpty()) {
+			System.out.println(this.numOfExpored + " queue " + openSet.size() + " todo Size "
+					+ currentPos.getTodo().size() + " " + currentPos.getTotalCost());
+			Town current = currentPos.getCurrentLocation();
+
+			if (closeSet.containsKey(current)) {
+				int jSize = currentPos.getTodo().size();
+				HashMap<Integer, LinkedList<Node>> temp = closeSet.get(current);
+				if (temp == null) {
+					HashMap<Integer, LinkedList<Node>> Set = new HashMap<Integer, LinkedList<Node>>();
+					LinkedList<Node> newList = new LinkedList<Node>();
+					newList.add(currentPos);
+					Set.put(jSize, newList);
+				} else if (temp.containsKey(jSize)) {
+					temp.get(jSize).add(currentPos);
+				} else {
+					LinkedList<Node> s = new LinkedList<Node>();
+					s.add(currentPos);
+					temp.put(jSize, s);
+				}
+			} else {
+				HashMap<Integer, LinkedList<Node>> Set = new HashMap<Integer, LinkedList<Node>>();
+				LinkedList<Node> newList = new LinkedList<Node>();
+				int jSize = currentPos.getTodo().size();
+				newList.add(currentPos);
+				Set.put(jSize, newList);
+				closeSet.put(current, Set);
+			}
+
+			// add <n, p> to CLOSED
+
+			if (currentPos.getTodo().isEmpty()) {// && openSet2.isEmpty()) {
 				return currentPos;
 			}
 
-			Town current = currentPos.getCurrentLocation();
-
-			Set<Town> neightbours = current.getAdjacentTowns().keySet();
-			for (Town neightbour : neightbours) {
-				// System.out.println(
-				// "##" + current.getName() + "=>" + neightbour.getName() + " "
-				// + currentPos.getTotalCost());
-			
-//				boolean isReturnedJob = false;
-				// Instant s = Instant.now();
+			Set<Entry<Town, Integer>> neightbours = current.getAdjacentTowns().entrySet();
+			for (Entry<Town, Integer> neightbour : neightbours) {
+				// check if there is match job
 				Job todo = null;
 				Iterator<Job> search = jobs.iterator();
 				while (search.hasNext()) {
 					Job searchToDo = search.next();
-					if (searchToDo.getOrigin().equals(current) && searchToDo.getDestination().equals(neightbour)) {
+					if (searchToDo.getOrigin().equals(current)
+							&& searchToDo.getDestination().equals(neightbour.getKey())) {
 						todo = searchToDo;
 						break;
 					}
 				}
-				Job rTodo = null;
-				if (todo != null) {
-					search = jobs.iterator();
-					while (search.hasNext()) {
-						Job searchToDo = search.next();
-						if (searchToDo.getOrigin().equals(neightbour) && searchToDo.getDestination().equals(current)) {
-							rTodo = searchToDo;
-							break;
+				boolean isJob = (todo != null);
+				Node nextMove = null;
+
+				if (isJob) {
+					// there is a job to do, make a new node and build the path
+					nextMove = new Node(todo.getDestination(), currentPos, isJob);
+					nextMove.getTodo().remove(todo);
+					nextMove.setHeuristic(heuristic(nextMove.getTodo()));
+					openSet.add(nextMove);
+
+				} else {
+					// if (currentPos.isInfinitLoop(neightbour.getKey()))
+					// continue;
+					nextMove = new Node(neightbour.getKey(), currentPos, isJob);
+					nextMove.setTodo(currentPos.getTodo());
+					nextMove.setHeuristic(heuristic(nextMove.getTodo()));
+					// if <n’, p’> is on CLOSED then if f(n’, p+e) < f(n’, p’)
+
+					Node toRemove = null;
+					boolean canAdd = true;
+					int jobLen = nextMove.getTodo().size();
+					if (closeSet.containsKey(nextMove.getCurrentLocation())) {
+						HashMap<Integer, LinkedList<Node>> hset = closeSet.get(nextMove.getCurrentLocation());
+						if (hset.containsKey(jobLen)) {
+							LinkedList<Node> set = hset.get(jobLen);
+							Iterator<Node> itr = set.iterator();
+							while (itr.hasNext()) {
+								Node temp = itr.next();
+								if (temp.getTodo().containsAll(nextMove.getTodo())) {
+									if (temp.getCost() >= nextMove.getCost()) {
+										toRemove = temp;
+									} else {
+										canAdd = false;
+									}
+								}
+							}
+							if (toRemove != null) {
+								set.remove(toRemove);
+							}
 						}
 					}
+					if (canAdd) {
+						openSet.add(nextMove);
+					}
 				}
-				if (currentPos.isInfinitLoop(neightbour) && (todo == null || rTodo == null))
-					continue;
-				boolean isJob = (todo != null);
-				boolean isReturnedJob = (rTodo != null);
-				Node nextMove = null;
-				if (isJob) {
-//					if (!isReturnedJob) {
-						// there is a job to do, make a new node and build the
-						// path
-						nextMove = new Node(todo.getDestination(), currentPos, isJob);
-						nextMove.getTodo().remove(todo);
-				} else if (isReturnedJob) {
-						nextMove = new Node(neightbour, currentPos, isJob);
-						nextMove = new Node(rTodo.getDestination(), nextMove, isReturnedJob);
-						nextMove.getTodo().remove(rTodo);	
-				} else {
-					nextMove = new Node(neightbour, currentPos, isJob);
-				}
-				nextMove.setHeuristic(heuristic(nextMove.getTodo()));
-				openSet.add(nextMove);
+				// if (nextMove.getTotalCost() < ) {
+				// remove <n’, p’> from closed and add <n’, p+e> to OPEN
+				// else if <n’, p’> is on OPEN then if f(n’, p+e) < f(n’, p’)
+				// replace <n’, p’> by <n’, p+e> on OPEN
+				// else if n’ is not on OPEN add <n’, p+e> to OPEN
+				// } else if {
+
+				// }
 			}
+
 		}
 		return null;
+
 	}
 
 	public void reconstruct_path(Node journey) {
