@@ -13,6 +13,7 @@ import java.util.Map.Entry;
  *
  */
 public class Town {
+	//immutable
 	private int uploadCost;
 	private String name;
 	private HashMap<Town, Integer> adjacentTowns;

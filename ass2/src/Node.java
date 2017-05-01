@@ -1,11 +1,11 @@
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 
 public class Node {
-	private LinkedList<Job> todo;
-
+	private State state;
 	private Node visited;
-	private Town currentLocation;
 	private boolean isJob;
 	// this path cost and unload cost;
 	// g(n)
@@ -13,14 +13,11 @@ public class Node {
 	// h(n)
 	private int heuristic;
 
-	public Node(Town currentLocation, Node visited, boolean isJob) {
-		this.currentLocation = currentLocation;
+	public Node(State state, Node visited, boolean isJob) {
+		this.state = state;
 		this.visited = visited;
 		this.isJob = isJob;
 		this.setCost();
-		if (visited != null) {
-			this.setTodo(visited.getTodo());
-		}
 	}
 
 	/**
@@ -28,16 +25,15 @@ public class Node {
 	 *            the cost to set
 	 */
 
-	public void setCost() {
+	private void setCost() {
 		if (this.visited != null) {
-			this.cost = this.visited.getCurrentLocation().getCostToAdjacentTown(currentLocation.getName());
+			this.cost = this.visited.getCurrentLocation().getCostToAdjacentTown(this.state.getTown().getName());
 			this.cost += this.visited.getCost();
 			if (isJob) {
-				this.cost += this.currentLocation.getUnloadCost();
+				this.cost += this.state.getTown().getUnloadCost();
 			}
 		} else {
 			this.cost = 0;
-			this.isJob = false;
 		}
 	}
 
@@ -58,26 +54,16 @@ public class Node {
 	/**
 	 * @return the todo
 	 */
-	public LinkedList<Job> getTodo() {
-		return todo;
+	public HashSet<Job> getTodo() {
+		return this.state.getJobs();
 	}
 
-	/**
-	 * @param todo
-	 *            the todo to set
-	 */
-	public void setTodo(LinkedList<Job> todo) {
-		this.todo = new LinkedList<>();
-		for (Job j : todo) {
-			this.todo.add(j);
-		}
-	}
 
 	/**
 	 * @return the currentLocation
 	 */
 	public Town getCurrentLocation() {
-		return currentLocation;
+		return this.state.getTown();
 	}
 
 	/**
@@ -108,19 +94,32 @@ public class Node {
 	public void setHeuristic(int heuristic) {
 		this.heuristic = heuristic;
 	}
-
-	public boolean isInfinitLoop(Town nextTown) {
-		if (this.visited == null || this.visited.visited == null)
-			return false;
-		Node lastTown = this.visited;
-		Node last2rdTown = lastTown.visited;
-		if (lastTown.getCurrentLocation().equals(nextTown)
-				&& this.currentLocation.equals(last2rdTown.currentLocation)) {
-			if (!lastTown.isJob && !last2rdTown.isJob) {
-				return true;
+	public Node makeMove(Town neightbour){
+		
+		// is that a job
+		Job job = null;
+		Iterator<Job> itr = this.state.getJobs().iterator();
+		while(itr.hasNext()){
+			Job temp = itr.next();
+			if (temp.getOrigin().equals(this.state.getTown()) && temp.getDestination().equals(neightbour)) {
+				job = temp;
+				break;
 			}
 		}
-		return false;
-
+		HashSet<Job> nextJobs = this.state.getJobs();
+		if(job != null) {
+			nextJobs = new HashSet<Job>(nextJobs);
+			nextJobs.remove(job);
+		}
+		
+		return new Node(new State(neightbour, nextJobs),this, job != null);
 	}
+
+	/**
+	 * @return the state
+	 */
+	public State getState() {
+		return state;
+	}
+	
 }

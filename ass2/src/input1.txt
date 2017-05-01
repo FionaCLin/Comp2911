@@ -27,5 +27,3 @@ Job Grafton Wagga              # Job is required from Grafton to Wagga
 Job Dubbo Grafton              # Job is required from Dubbo to Grafton
 Job Sydney Wagga               # Job is required from Sydney to Wagga
 Job Sydney Bathurst            # Job is required from Sydney to Bathurst
-Job Grafton Sydney              # Job is required from Grafton to Wagga
-Print

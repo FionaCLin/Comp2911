@@ -2,6 +2,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 
 public class FreightTransportSystem {
@@ -81,7 +82,7 @@ public class FreightTransportSystem {
 	public void AStarSearch() {
 		Instant s = Instant.now();
 		
-		Node routes = this.mapGraph.UniformCostSearch(this.jobList);
+		Node routes = this.mapGraph.aStarSearch(new HashSet<Job>(this.jobList));
 		Instant e = Instant.now();
 		Duration d = Duration.between(s, e);
 		System.out.println("Job finding time: " + d.getSeconds());

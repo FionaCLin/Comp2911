@@ -9,6 +9,7 @@ public class Job {
 	 * @param destination
 	 */
 	public Job(Town src, Town dest) {
+		//immutable
 		this.src = src;
 		this.dest = dest;
 		this.setTotal();
