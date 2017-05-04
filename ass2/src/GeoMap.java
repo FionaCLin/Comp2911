@@ -3,45 +3,79 @@ import java.util.LinkedList;
 import java.util.PriorityQueue;
 import java.util.Set;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class GeoMap.
+ */
 public class GeoMap {
-	private LinkedList<Town> locations;
-	private Town start;
+	private static String START_LOC;
+	/** The locations. */
+	private HashSet<Town> locations;
+
+	/** The num of explored. */
 	private int numOfExplored;
+
+	/** The heuristic. */
 	private IHeuristicStrategy heuristic;
 
 	/**
-	 * @param locations
+	 * Instantiates a new geo map.
+	 *
+	 * @param Gives
+	 *            the town object an unloading cost
+	 * @param Name
+	 *            the town
+	 * @param heuristic
+	 *            the class implements heuristic function
 	 */
-	public GeoMap(int uploadCost, String name, IHeuristicStrategy heuristic) {
-		this.locations = new LinkedList<>();
-		this.locations.add(new Town(uploadCost, name));
-		// change to be more dynamic
-		this.start = Town.fetchTownByName(this.locations, "Sydney");
+	public GeoMap(int unloadCost, String name, IHeuristicStrategy heuristic, String start_loc) {
+		this.locations = new HashSet<>();
+		this.locations.add(new Town(unloadCost, name));
+		this.START_LOC = start_loc;
 		this.heuristic = heuristic;
 	}
 
 	/**
-	 * @return the numOfExpored
+	 * Gets the num of expored.
+	 *
+	 * @return the num of expored
 	 */
-	public int getNumOfExpored() {
+	public int getExporedNum() {
 		return numOfExplored;
 	}
 
 	/**
+	 * Gets the locations.
+	 *
 	 * @return the locations
 	 */
-	public LinkedList<Town> getLocations() {
+	public HashSet<Town> getLocations() {
 		return locations;
 	}
 
-	public void addLocations(int uploadCost, String name) {
-		this.locations.add(new Town(uploadCost, name));
+	/**
+	 * Adds the locations.
+	 *
+	 * @param Pass
+	 *            an unload cost into the town object
+	 * @param Name
+	 *            the town
+	 */
+	public void addLocation(int unloadCost, String name) {
+		this.locations.add(new Town(unloadCost, name));
 	}
 
-	// equivalent to ==> addEdge() – Appends an edge startVertex → endVertex
-	// with a certain weight. This is an O(1) Insertion.
+	/**
+	 * Adds the adj town cost.
+	 *
+	 * @param Pass
+	 *            in the starting town as a string
+	 * @param Pass
+	 *            in the destination town as a string
+	 * @param Pass
+	 *            in the unloading cost for the town
+	 */
 	public void addAdjTownCost(String origin, String destination, int cost) {
-		// TODO Auto-generated method stub
 		Town start = null;
 		Town end = null;
 		for (Town t : this.locations) {
@@ -59,32 +93,38 @@ public class GeoMap {
 		}
 	}
 
-	public Set<Town> outPaths(Town t) {
-		return t.getAdjacentTowns().keySet();
-	}
+	/**
+	 * A* search.
+	 *
+	 * @param input
+	 *            the list of jobs to be searched
+	 * @return the node
+	 */
+	public Move aStarSearch(HashSet<Job> jobs) {
+		this.numOfExplored = 0;
+		Town start = null;
+		for (Town t : this.locations) {
+			if (t.getName().equals(START_LOC)) {
+				start = t;
+			}
+		}
 
-	public int indexOf(Town origin) {
-		return this.locations.indexOf(origin);
-	}
-
-	// Uniform Cost Search (Dijistra Search)
-	public Node aStarSearch(HashSet<Job> jobs) {
-
-		State first_state = new State(this.start, jobs);
-		Node first = new Node(first_state, null, false);
+		State first_state = new State(start, jobs);
+		Move first = new Move(first_state, null, false);
 
 		first.setHeuristic(heuristic.calcHeuristic(jobs));
 
-		PriorityQueue<Node> openSet = new PriorityQueue<Node>(new TotalCostComparator());
+		PriorityQueue<Move> openSet = new PriorityQueue<Move>();
 
 		HashSet<State> seen = new HashSet<State>();
 		openSet.add(first);
 		seen.add(first_state);
+
 		while (!openSet.isEmpty()) {
 
-			Node currentPos = openSet.poll();
+			Move currentPos = openSet.poll();
 			this.numOfExplored++;
-			Town current = currentPos.getCurrentLocation();
+			Town current = currentPos.getLocation();
 
 			if (currentPos.getTodo().isEmpty()) {
 				return currentPos;
@@ -94,21 +134,25 @@ public class GeoMap {
 			// if seen set contain it then skip it
 			// else add to the openSet and the seen
 			for (Town neightbour : current.getAdjacentTowns().keySet()) {
-				Node nextMove = currentPos.makeMove(neightbour);
+				Move nextMove = currentPos.makeMove(neightbour);
 				if (seen.contains(nextMove.getState())) {
 					continue;
 				}
-				
 				nextMove.setHeuristic(heuristic.calcHeuristic(nextMove.getTodo()));
 				openSet.add(nextMove);
 				seen.add(nextMove.getState());
 			}
 		}
 		return null;
-
 	}
 
-	public void reconstruct_path(Node journey) {
+	/**
+	 * Reconstruct path.
+	 *
+	 * @param Read
+	 *            in the optimal path one node at a time.
+	 */
+	public void reconstruct_path(Move journey) {
 		if (journey == null)
 			return;
 		else if (journey.getVisited() != null) {
@@ -118,11 +162,9 @@ public class GeoMap {
 			} else {
 				System.out.print("Empty ");
 			}
-			String printRes = journey.getVisited().getCurrentLocation().getName() + " to ";
-			printRes += journey.getCurrentLocation().getName() + "\t";
-
+			String printRes = journey.getVisited().getLocation().getName() + " to ";
+			printRes += journey.getLocation().getName() + "\t";
 			System.out.println(printRes);
 		}
 	}
-
 }

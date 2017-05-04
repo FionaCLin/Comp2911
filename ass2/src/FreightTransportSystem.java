@@ -1,40 +1,70 @@
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Set;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class FreightTransportSystem.
+ */
 public class FreightTransportSystem {
+
+	/** The map graph. */
 	private GeoMap mapGraph;
+
+	/** The job list. */
 	private HashSet<Job> jobList;
 
 	/**
-	 * @param locations
+	 * Instantiates a new freight transport system.
+	 *
+	 * @param uploadCost
+	 *            the upload cost
+	 * @param name
+	 *            the name
 	 */
-	public FreightTransportSystem(int uploadCost, String name) {
-		this.mapGraph = new GeoMap(uploadCost, name, new TotalCostHeuristic());
+	public FreightTransportSystem(int uploadCost, String name, String start_loc) {
+		this.mapGraph = new GeoMap(uploadCost, name, new TotalCostHeuristic(), start_loc);
 		this.jobList = new HashSet<Job>();
 
 	}
 
-	public LinkedList<Town> getLocations() {
+	/**
+	 * Gets the locations.
+	 *
+	 * @return the locations
+	 */
+	public HashSet<Town> getLocations() {
 		return this.mapGraph.getLocations();
 	}
 
-	public void addLocations(int uploadCost, String name) {
-		this.mapGraph.addLocations(uploadCost, name);
+	/**
+	 * Adds the locations.
+	 *
+	 * @param uploadCost
+	 *            the upload cost
+	 * @param name
+	 *            the name
+	 */
+	public void addLocation(int uploadCost, String name) {
+		this.mapGraph.addLocation(uploadCost, name);
 	}
 
-	public void addAdjTownCost(String origin, String destination, int cost) {
+	/**
+	 * Adds the adjavcent town cost.
+	 *
+	 * @param from
+	 *            the origin
+	 * @param to
+	 *            the destination
+	 * @param cost
+	 *            the cost
+	 */
+	public void addAdjTownCost(String from, String to, int cost) {
 		Town start = null;
 		Town end = null;
 		for (Town t : this.mapGraph.getLocations()) {
-			if (t.getName().equals(origin)) {
+			if (t.getName().equals(from)) {
 				start = t;
 			}
-			if (t.getName().equals(destination)) {
+			if (t.getName().equals(to)) {
 				end = t;
 			}
 		}
@@ -45,34 +75,41 @@ public class FreightTransportSystem {
 		}
 	}
 
-	public boolean addJobList(String origin, String destination) {
-		// TODO Auto-generated method stub
+	/**
+	 * Adds the job list.
+	 *
+	 * @param from
+	 *            the origin
+	 * @param to
+	 *            the destination
+	 * @return true, if successful
+	 */
+	public boolean addJobList(String from, String to) {
 		Town start = null;
 		Town end = null;
 		for (Town t : this.mapGraph.getLocations()) {
-			if (t.getName().equals(origin)) {
+			if (t.getName().equals(from)) {
 				start = t;
 			}
-			if (t.getName().equals(destination)) {
+			if (t.getName().equals(to)) {
 				end = t;
 			}
 		}
 		if (start != null && end != null && start.getAdjacentTowns().containsKey(end)) {
-
 			this.jobList.add(new Job(start, end));
 			return true;
 		} else {
-			System.out.print("Invalid ");
+			// System.out.print("Invalid ");
 			return false;
 		}
 	}
 
-
-	public void AStarSearch() {
-
-		Node routes = this.mapGraph.aStarSearch(this.jobList);
-
-		System.out.println(this.mapGraph.getNumOfExpored() + " nodes expand");
+	/**
+	 * A star search.
+	 */
+	public void aStarSearch() {
+		Move routes = this.mapGraph.aStarSearch(this.jobList);
+		System.out.println(this.mapGraph.getExporedNum() + " nodes expand");
 		if (routes != null) {
 			System.out.println("cost = " + routes.getCost());
 			this.mapGraph.reconstruct_path(routes);

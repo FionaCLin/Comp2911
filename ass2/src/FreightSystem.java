@@ -2,8 +2,21 @@ import java.io.*;
 import java.time.Duration;
 import java.time.Instant;
 
-
+// TODO: Auto-generated Javadoc
+/**
+ * The Class FreightSystem.
+ */
 public class FreightSystem {
+
+	/** The start loc. */
+	static final String START_LOC = "Sydney";
+
+	/**
+	 * The main method.
+	 *
+	 * @param args
+	 *            the arguments
+	 */
 	public static void main(String[] args) {
 		BufferedReader bR = null;
 		if (args.length != 1) {
@@ -24,9 +37,9 @@ public class FreightSystem {
 						int cost = Integer.parseInt(command.split(" ")[1]);
 						String name = command.split(" ")[2];
 						if (freightTranSys == null) {
-							freightTranSys = new FreightTransportSystem(cost, name);
+							freightTranSys = new FreightTransportSystem(cost, name, START_LOC);
 						} else {
-							freightTranSys.addLocations(cost, name);
+							freightTranSys.addLocation(cost, name);
 						}
 					} else if (command.startsWith("Cost")) {
 						int cost = Integer.parseInt(command.split(" ")[1]);
@@ -37,12 +50,18 @@ public class FreightSystem {
 					} else if (command.startsWith("Job")) {
 						String origin = command.split(" ")[1];
 						String destination = command.split(" ")[2];
-						if (!freightTranSys.addJobList(origin, destination)){
-							System.out.println(command);
+						if (!freightTranSys.addJobList(origin, destination)) {
+							// handle invalid Job input
+							// System.out.println(command);
 						}
-					} 
+					}
 				}
-				freightTranSys.AStarSearch();
+				Instant s = Instant.now();
+				freightTranSys.aStarSearch();
+				Instant e = Instant.now();
+				Duration d = Duration.between(s, e);
+				System.out.println("Running time: " + d.toMillis());
+
 				bR.close();
 			} catch (Exception e) {
 				e.printStackTrace();
